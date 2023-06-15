@@ -1,4 +1,4 @@
-![Docker-Logo-700x394](https://canvs.oss-cn-chengdu.aliyuncs.com/canvs_typora/Docker-Logo-700x394.png)
+![Docker-Logo-700x394](imgs/Docker-Logo-700x394.png)
 
 #### docker的诞生
 
@@ -14,7 +14,7 @@
 
 #### docker对比传统虚拟机
 
-![2941939-20221219173421666-411559155](https://canvs.oss-cn-chengdu.aliyuncs.com/canvs_typora/2941939-20221219173421666-411559155.png)
+![2941939-20221219173421666-411559155](imgs/2941939-20221219173421666-411559155.png)
 
 - 实现原理技术不同：
   - 虚拟机是用来进行硬件资源划分的完美解决方案，利用的是硬件虚拟化技术，如VT-x、AMD-V会通过hypervisor层来实现对资源的彻底隔离。
@@ -53,7 +53,7 @@
 
 #### Docker系统架构
 
-![architecture (1)](https://canvs.oss-cn-chengdu.aliyuncs.com/canvs_typora/architecture%20(1).svg)
+![architecture (1)](imgs/architecture%20(1).svg)
 
 - Docker Daemon：即Dockerd，Docker守护进程，监听Docker API请求并管理Docker对象。
 - Image镜像：用于创建Docker容器的模版
@@ -69,6 +69,36 @@
 - Containerd：Container Daemon，是管理容器的生命周期，自身不会创建容器，调用Runc来完成容器的创建
 - Runc：Run Container是OCI（开放容器倡议基金会）容器运行时规范的实现；Runc用于创建容器，本质是一个独立的容器运行时CKI工具。在fork出一个容器子进程后会启动该容器进程。在容器进程启动后，Runc会自动退出
 - Shim：当Runc自动退出之前，会讲新容器进程的父进程指定为相应的Shim进程
+
+#### Docker隔离原理
+
+- namespace（资源隔离）
+
+| namespace | 系统调用参数  | 隔离内容                   |
+| --------- | ------------- | -------------------------- |
+| UTS       | CLONE_NEWUTS  | 主机和域名                 |
+| IPC       | CLONE_NEWIPC  | 信号量、消息队列和共享内存 |
+| PID       | CLONE_NEWPID  | 进程编号                   |
+| Network   | CLONE_NEWNET  | 网络设备、网络栈、端口等   |
+| Mount     | CLONE_NEWNS   | 挂载点（文件系统）         |
+| User      | CLONE_NEWUSER | 用户和用户组               |
+
+- cgroups资源限制
+  - 资源限制：限制任务使用的资源总额，并在超过这个配额时发出提示
+  - 优先级分配：分配CPU时间片数量及磁盘IO宽带大小、控制任务运行的优先级
+  - 资源统计：统计系统资源使用量，如CPU使用时长、内存用量等
+  - 任务控制：对任务执行挂载、恢复等操作
+
+| 子系统                          | 功能                                                         |
+| ------------------------------- | ------------------------------------------------------------ |
+| cpu                             | 使用调度程序控制任务对CPU的使用                              |
+| cpuacct(CPU Accounting)         | 自动生成cgroup中任务对CPU资源使用情况的报告                  |
+| cpuset                          | 为cgroup中的任务分配独立的CPU（多处理器系统时）和内存        |
+| devices                         | 开启或关闭cgroup中任务对设备的访问                           |
+| freezer                         | 挂起火恢复cgroup中的任务                                     |
+| memory                          | 设定cgroup中任务对内存使用量的限定，并生成这些任务对内存资源使用情况的报告 |
+| perf_event(Linux CPU性能探测器) | 使cgroup中的任务可以进行统一的性能测试                       |
+| net_cls(Docker未使用）          | 通过登记识别标记网络数据包，从而允许Linux流量监控程序（Traffic Controller）识别从具体cgroup中生成的数据包 |
 
 #### Docker仓库
 
@@ -179,6 +209,54 @@ EOF
 Job for docker.service failed because the control process exited with error code.
 See "systemctl status docker.service" and "journalctl -xe" for details.
 ```
+
+#### Docker常用命令
+
+![](imgs/cmd_logic.png)
+
+| 命令      | 作用                                                         |
+| --------- | ------------------------------------------------------------ |
+| attach    | 绑定到运行中容器的标准输入、输出，以及错误流（这样似乎也能进入容器内容，但是一定小心，它们操作的就是控制台，控制台的退出命令会生效，比如redis、nginx） |
+| build     | 从一个 Dockerfile 文件构建镜像                               |
+| commit    | 把容器的改变 提交创建一个新的镜像                            |
+| cp        | 容器和本地文件系统间 复制 文件/文件夹                        |
+| create    | 创建新容器，但并不启动(注意与docker run 的区分)需要手动启动。start\stop |
+| diff      | 检查容器里文件系统结构的更改【A:添加文件或目录 D:文件或者目录删除 C:文 件或者目录更改】 |
+| events    | 获取服务器的实时事件                                         |
+| exec      | 在运行时的容器内运行命令                                     |
+| export    | 导出 **容器** 的文件系统为一个tar文件。commit是直接提交成镜像，export是导出成文 件方便传输 |
+| history   | 显示镜像的历史                                               |
+| images    | 列出所有镜像                                                 |
+| import    | 导入tar的内容创建一个镜像，再导入进来的镜像直接启动不了容器。<br/> /docker-entrypoint.sh nginx -g 'daemon o;'<br/> docker ps --no-trunc 看下之前的完整启动命令再用他 |
+| info      | 显示系统信息                                                 |
+| inspect   | 获取docker对象的底层信息                                     |
+| kill      | 杀死一个或者多个容器                                         |
+| load      | 从 tar 文件加载镜像                                          |
+| login     | 登录Docker registry                                          |
+| logout    | 退出Docker registry                                          |
+| logs      | 获取容器日志;容器以前在前台控制台能输出的所有内容，都可以看到 |
+| pause     | 暂停一个或者多个容器                                         |
+| port      | 列出容器的端口映射                                           |
+| ps        | 列出所有容器                                                 |
+| pull      | 从registry下载一个image 或者repository                       |
+| push      | 给registry推送一个image或者repository                        |
+| rename    | 重命名一个容器                                               |
+| restart   | 重启一个或者多个容器                                         |
+| rm        | 移除一个或者多个容器                                         |
+| rmi       | 移除一个或者多个镜像                                         |
+| run       | 创建并启动容器                                               |
+| save      | 把一个或者多个 **镜像** 保存为tar文件                        |
+| search    | 去docker hub寻找镜像                                         |
+| start     | 启动一个或者多个容器                                         |
+| stats     | 显示容器资源的实时使用状态                                   |
+| stop      | 停止一个或者多个容器                                         |
+| tag       | 给源镜像创建一个新的标签，变成新的镜像                       |
+| top       | 显示正在运行容器的进程                                       |
+| unpause   | pause的反操作                                                |
+| update    | 更新一个或者多个docker容器配置                               |
+| container | 管理容器                                                     |
+| network   | 管理网络                                                     |
+| volume    | 管理卷                                                       |
 
 #### Docker镜像 
 
@@ -304,6 +382,8 @@ redis        latest    116cad43b6af   7 days ago   117MB
 
 **docker run 参数 镜像名称:tag 执行命令**
 
+**docker create [OPTIONS] IMAGE [COMMAND] [ARG...]** 
+
 **常用参数**
 
 - -i 保持和docker容器内的交互，启动容器时，运行的命令结束后，容器依然存活，没有退出（默认是会退出，即停止）
@@ -314,6 +394,12 @@ redis        latest    116cad43b6af   7 days ago   117MB
 - -p 宿主机端口:内部端口
 
 ```shell
+#创建好容器不会启动，需要手动启动
+[root@docker ~]# docker create redis
+3c4c54c04381b207435ffb6c39e0997fcce0e4b992204eabd79a861349502e76
+[root@docker ~]# docker ps -a|grep redis
+3c4c54c04381   redis     "docker-entrypoint.s…"   16 seconds ago   Created                                                            tender_kare
+
 [root@docker docker]# docker run -d --name redis1 -p 6379:6379 redis
 6e819bf81a479f9667871c8cf1be6e302e7e54221c1aacfa55e917bead2c2533
 ```
@@ -460,11 +546,41 @@ Successfully copied 2.05kB to /root/
 Docker-Logo-700x394.png  index.html
 ```
 
-#### Docker数据卷
+#### 推送镜像
 
-通过镜像创建一个容器。容器一旦销毁，则容器内的数据将一并被删除；容器中的数据不是持久化状态的；数据卷的目的就是数据的持久化，完全独立于容器的生命周期，因此docker不会再容器删除时删除其挂载的数据卷。
+```shell
+#运行中的容器保存到新的镜像
+[root@docker ~]# docker commit -a canvs -m "v1" 630ac564b05c canvs/nginx:v1
+sha256:b91253c34bbf8b1049a238a5dc9a677655105b067d5676608c467e206bace15b
+[root@docker ~]# docker images | grep canvs/nginx
+canvs/nginx   v1        b91253c34bbf   38 seconds ago   141MB
+```
 
-![553377-20211031122438814-2046080875](https://canvs.oss-cn-chengdu.aliyuncs.com/canvs_typora/553377-20211031122438814-2046080875.png)
+```shell
+#登录docker hub
+[root@docker ~]# docker login
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username: canvs
+Password: 
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+#推送到docker hub
+[root@docker ~]# docker push canvs/nginx:v1
+```
+
+#### Docker挂载
+
+- Volumes（卷）：存储在主机文件系统的一部分中，该文件系统由Docker管理（在Linux上时"/var/lib/docker/volumes/"）。非Docker进程不应该修改文件系统这一部分。
+  - 匿名卷：docker run -d -P -v :/etc/nginx nginx
+  - 具名卷：docker run -d -P -v nginx:/etc/nginx nginx
+- Bind mounts（绑定挂载）：可以在任何地方存储在主机系统上。它们甚至可能是重要的文件或目录。Docker主机或Docker容器上的非Docker进程可以随时对其修改。
+  - docker run -d -P -v /root/nginx:/etc/nginx nginx
+- tmpfs mounts（临时挂载）：仅存储在主机系统中的内存中，并且永远不会写入主机的文件系统。
+
+![553377-20211031122438814-2046080875](imgs/553377-20211031122438814-2046080875.png)
 
 ##### 数据卷特性
 
@@ -473,7 +589,9 @@ Docker-Logo-700x394.png  index.html
 - 对数据卷的更新，不会影响镜像
 - 数据卷默认会一直存在，即使容器被删除
 
-##### 数据卷的应用
+>通过镜像创建一个容器。容器一旦销毁，则容器内的数据将一并被删除；容器中的数据不是持久化状态的；数据卷的目的就是数据的持久化，完全独立于容器的生命周期，因此docker不会再容器删除时删除其挂载的数据卷。
+
+#### 数据卷的应用
 
 **创建数据卷**
 
@@ -531,6 +649,8 @@ website
 ```shell
 [root@docker ~]# docker volume rm web_volume 
 web_volume
+#删除无用的数据卷
+[root@docker ~]# docker volume prune
 ```
 
 #### Nginx
@@ -628,3 +748,76 @@ location /{
 root@c771a20980d0:/# mysql -u root -p 
 ```
 
+#### 存储原理
+
+```shell
+[root@docker ~]# docker image inspect nginx
+ "GraphDriver": {
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/b0a8808e8f762f08d831eb21fcdaf90de0af64651811d77c5aeb356c3de55a79/diff:/var/lib/docker/overlay2/fd7d4d68ae4949b758cddac41222d14ae7e202e2e421c294da3a14ffbd163f54/diff:/var/lib/docker/overlay2/c184ae272cbcf94f4b092923ffc74841aa1eb6771ad50525b4bb58d83ca9c3c5/diff:/var/lib/docker/overlay2/cff17f5604b4a16633e52232c98a159582e0f270eaa7f3276ff7b5fe423ccd61/diff:/var/lib/docker/overlay2/c519d5971ca202fcd066eee15991047fda5f9ee446accc9c96222eaea41a167a/diff",
+                "MergedDir": "/var/lib/docker/overlay2/c124a30ca4b869946cea745cc1d57365622c2f096a3bcab63f01c98b80df019d/merged",
+                "UpperDir": "/var/lib/docker/overlay2/c124a30ca4b869946cea745cc1d57365622c2f096a3bcab63f01c98b80df019d/diff",
+                "WorkDir": "/var/lib/docker/overlay2/c124a30ca4b869946cea745cc1d57365622c2f096a3bcab63f01c98b80df019d/work"
+            },
+```
+
+- LowerDir：底层目录；diff（只是存不同）；包含小型Linux和装好的软件
+
+```shell
+#小Linux系统
+[root@docker diff]# ls /var/lib/docker/overlay2/c519d5971ca202fcd066eee15991047fda5f9ee446accc9c96222eaea41a167a/diff
+bin  boot  dev  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+
+#nginx配置文件
+[root@docker diff]# ls /var/lib/docker/overlay2/cff17f5604b4a16633e52232c98a159582e0f270eaa7f3276ff7b5fe423ccd61/diff
+docker-entrypoint.d  etc  lib  tmp  usr  var
+
+#nginx启动命令
+[root@docker diff]# ls /var/lib/docker/overlay2/c184ae272cbcf94f4b092923ffc74841aa1eb6771ad50525b4bb58d83ca9c3c5/diff
+docker-entrypoint.sh
+
+#
+[root@docker diff]# ls /var/lib/docker/overlay2/fd7d4d68ae4949b758cddac41222d14ae7e202e2e421c294da3a14ffbd163f54/diff
+docker-entrypoint.d
+[root@docker diff]# ls /var/lib/docker/overlay2/b0a8808e8f762f08d831eb21fcdaf90de0af64651811d77c5aeb356c3de55a79/diff
+docker-entrypoint.d
+```
+
+- MergedDir：合并目录；容器最终的 完整工作目录全内容都在合并目录；数据卷在容器层产生；所有的增删改查都在容器层
+- UpperDir：上层目录
+- WorkDir：工作目录（零时层），pid；
+
+#### 可视化界面-[Portainer](https://documentation.portainer.io/)
+
+Portainer社区版2.0拥有超过50万的普通用户，是功能强大的开源工具集，可让您轻松地在Docker， Swarm，Kubernetes和Azure ACI中构建和管理容器。 Portainer的工作原理是在易于使用的GUI后面隐藏 使管理容器变得困难的复杂性。通过消除用户使用CLI，编写YAML或理解清单的需求，Portainer使部署 应用程序和解决问题变得如此简单，任何人都可以做到。 Portainer开发团队在这里为您的Docker之旅提 供帮助;
+
+```shell
+# 服务端部署
+docker run -d -p 8000:8000 -p 9000:9000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
+# 访问 9000 端口即可
+#agent端部署
+docker run -d -p 9001:9001 --name portainer_agent --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker/volumes:/var/lib/docker/volumes portainer/agent
+```
+
+#### Dockerfile
+
+| 指令        | 说明                                                         |
+| ----------- | ------------------------------------------------------------ |
+| FROM        | 指定基础镜像                                                 |
+| MAINTAINER  | 指定维护者信息，已经过时，可以使用LABEL maintainer=xxx 来替代 |
+| RUN         | 运行命令 v                                                   |
+| CMD         | 指定启动容器时默认的命令 v                                   |
+| ENTRYPOINT  | 指定镜像的默认入口.运行命令 v                                |
+| EXPOSE      | 声明镜像内服务监听的端口 v                                   |
+| ENV         | 指定环境变量，可以在docker run的时候使用-e改变 v;会被固化到image的config里面 |
+| ADD         | 复制指定的src路径下的内容到容器中的dest路径下，src可以为url会自动下载， 可以为tar文件，会自动解压 |
+| COPY        | 复制本地主机的src路径下的内容到镜像中的dest路径下，但不会自动解压等 |
+| LABEL       | 指定生成镜像的元数据标签信息                                 |
+| VOLUME      | 创建数据卷挂载点                                             |
+| USER        | 指定运行容器时的用户名或UID                                  |
+| WORKDIR     | 配置工作目录，为后续的RUN、CMD、ENTRYPOINT指令配置工作目录   |
+| ARG         | 指定镜像内使用的参数(如版本号信息等)，可以在build的时候，使用--build- args改变 v |
+| OBBUILD     | 配置当创建的镜像作为其他镜像的基础镜像是，所指定的创建操作指令 |
+| STOPSIGNAL  | 容器退出的信号值                                             |
+| HEALTHCHECK | 健康检查                                                     |
+| SHELL       | 指定使用shell时的默认shell类型                               |
