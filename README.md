@@ -1,6 +1,6 @@
 ![Docker-Logo-700x394](imgs/Docker-Logo-700x394.png)
 
-#### docker的诞生
+### docker的诞生
 
 [docker](https://www.docker.com/)最初是由dotCloud公司创始人 [Solomon Hykes](https://github.com/shykes) 在法国期间发起的一个公司内部项目，最初底层利用了Linux容器技术（**LXC**）（在操作系统中实现资源隔离与限制）。从0.7版本以后基于[libcontainer](https://github.com/docker/libcontainer)开发。
 
@@ -12,7 +12,7 @@
 
 > 什么是容器技术：https://www.redhat.com/zh/topics/containers/whats-a-linux-container
 
-#### docker对比传统虚拟机
+### docker对比传统虚拟机
 
 ![2941939-20221219173421666-411559155](imgs/2941939-20221219173421666-411559155.png)
 
@@ -34,9 +34,7 @@
 | 系统支持量 | 单机支持上千个容器 | 一般几十个 |
 | 资源隔离   | 安全隔离           | 完全隔离   |
 
-
-
-#### Docker架构
+### Docker架构
 
 - Docker使用C/S架构模式，可以远程API来管理和创建Docker容器。
 
@@ -44,14 +42,14 @@
 
 - 容器与镜像的关系类似于面向对象的对象和类
 
-##### 容器与镜像的关系
+#### 容器与镜像的关系
 
 | Docker | 面向对象 |
 | ------ | -------- |
 | 容器   | 对象     |
 | 镜像   | 类       |
 
-#### Docker系统架构
+### Docker系统架构
 
 ![architecture (1)](imgs/architecture%20(1).svg)
 
@@ -62,7 +60,7 @@
 - Tag标签：通过\<repository>:\<tag>即可唯一定位一个镜像。
 - Registry镜像中心：存放着很多由官方、其他机构或个人创建的 Docker 仓库，Docker 用户可以直接从这些仓库中 pull 需要的镜像，也可以将自己制作的镜像 push 到 Docker 镜像 中心相应的仓库中。
 
-#### docker引擎架构
+### Docker引擎架构
 
 - Docker Client：提供CLI工具，用于用户向Docker提交命令请求
 - Dockerd：即Docker Daemon，功能有镜像构建、镜像管理、REST API、核心网络等，通过gRPC与Containerd通信
@@ -70,7 +68,7 @@
 - Runc：Run Container是OCI（开放容器倡议基金会）容器运行时规范的实现；Runc用于创建容器，本质是一个独立的容器运行时CKI工具。在fork出一个容器子进程后会启动该容器进程。在容器进程启动后，Runc会自动退出
 - Shim：当Runc自动退出之前，会讲新容器进程的父进程指定为相应的Shim进程
 
-#### Docker隔离原理
+### Docker隔离原理
 
 - namespace（资源隔离）
 
@@ -100,7 +98,7 @@
 | perf_event(Linux CPU性能探测器) | 使cgroup中的任务可以进行统一的性能测试                       |
 | net_cls(Docker未使用）          | 通过登记识别标记网络数据包，从而允许Linux流量监控程序（Traffic Controller）识别从具体cgroup中生成的数据包 |
 
-#### Docker仓库
+### Docker仓库
 
 - 公有 Docker Registry：公有服务是开放给用户使用、允许用户管理镜像的Registry服务。
   - [Docker Hub](https://hub.docker.com/)
@@ -111,7 +109,7 @@
   - [VMWare Harbor](https://github.com/vmware/harbor)
   - [Sonatype Nexus](https://www.sonatype.com/docker) 
 
-#### Docker安装
+### Docker安装
 
 >官方安装教程：https://docs.docker.com/engine/install/centos/#install-using-the-repository
 
@@ -210,7 +208,7 @@ Job for docker.service failed because the control process exited with error code
 See "systemctl status docker.service" and "journalctl -xe" for details.
 ```
 
-#### Docker常用命令
+### Docker常用命令
 
 ![](imgs/cmd_logic.png)
 
@@ -258,9 +256,9 @@ See "systemctl status docker.service" and "journalctl -xe" for details.
 | network   | 管理网络                                                     |
 | volume    | 管理卷                                                       |
 
-#### Docker镜像 
+### Docker镜像 
 
-##### **查找镜像**
+#### 查找镜像
 
 ```shell
 [root@docker ~]# docker search --help
@@ -281,7 +279,7 @@ Options:
 [root@docker ~]# docker search tomcat
 ```
 
-##### **获取镜像**
+#### 获取镜像
 
 - docker pull [OPTIONS] NAME[:TAG|@DIGEST]
 
@@ -290,7 +288,7 @@ Options:
 [root@docker ~]# docker pull tomcat 
 ```
 
-##### **列出镜像**
+#### 列出镜像
 
 ```shell
 [root@docker ~]# docker images
@@ -303,7 +301,7 @@ hello-world   latest    9c7a54a9a43c   6 days ago   13.3kB
 redis         latest    116cad43b6af   7 days ago   117MB
 ```
 
-##### **虚悬镜像(Dangling Image)**
+#### 虚悬镜像(Dangling Image)
 
 - 镜像列表中，有一种特殊的镜像，这个镜像既没有仓库名，也没有标签
 
@@ -314,7 +312,7 @@ redis         latest    116cad43b6af   7 days ago   117MB
 
 > 这个镜像原本是有镜像名和标签的，原来为 tomcat:8.0，随着官方镜像维护，发布了新版本后，重新 docker pull tomcat:8.0 时，tomcat:8.0 这个镜像名被转移到了新下载的镜像身上，而旧的镜像上的这个名称则被取消， 从而成为了 。除了 docker pull 可能导致这种情况，docker build 也同样可以导致这种现象。由于新旧镜像同 名，旧镜像名称被取消，从而出现仓库名、标签均为 的镜像。这类无标签镜像也被称为 虚悬镜像(dangling image) 。 一般来说，虚悬镜像已经失去了存在的价值，是可以随意删除的.
 
-##### **删除本地镜像**
+#### 删除本地镜像
 
 - docker rmi [OPTIONS] IMAGE [IMAGE...]
 
@@ -330,14 +328,14 @@ REPOSITORY   TAG       IMAGE ID       CREATED      SIZE
 redis        latest    116cad43b6af   7 days ago   117MB
 ```
 
-##### **查看本地镜像的IMAGE ID**
+#### 查看本地镜像的IMAGE ID
 
 ```shell
 [root@docker docker]# docker images -q
 116cad43b6af
 ```
 
-##### 查看镜像的制作历史
+#### 查看镜像的制作历史
 
 ```shell
 [root@docker docker]# docker history redis
@@ -348,7 +346,7 @@ IMAGE          CREATED      CREATED BY                                      SIZE
 <missing>      7 days ago   /bin/sh -c #(nop) COPY file:e873a0e3c13001b5…   661B      
 ```
 
-##### **保存镜像**
+#### 保存镜像
 
 - save选项将本地仓库的镜像保存当前目录下
 
@@ -376,9 +374,9 @@ REPOSITORY   TAG       IMAGE ID       CREATED      SIZE
 redis        latest    116cad43b6af   7 days ago   117MB
 ```
 
-#### Docker容器
+### Docker容器
 
-##### 启动容器
+#### 启动容器
 
 **docker run 参数 镜像名称:tag 执行命令**
 
@@ -404,7 +402,7 @@ redis        latest    116cad43b6af   7 days ago   117MB
 6e819bf81a479f9667871c8cf1be6e302e7e54221c1aacfa55e917bead2c2533
 ```
 
-##### 查看容器状态
+#### 查看容器状态
 
 - docker ps  #查看运行的容器
 - docker ps -a   #查看所有容器（包含运行和停止）
@@ -421,7 +419,7 @@ CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS        
 6e819bf81a47   redis     "docker-entrypoint.s…"   2 minutes ago   Up 2 minutes   0.0.0.0:6379->6379/tcp, :::6379->6379/tcp   redis1
 ```
 
-##### 停止容器
+#### 停止容器
 
 - docker stop 容器名
 
@@ -445,7 +443,7 @@ f819a6c49c20   tomcat    "catalina.sh run"   About an hour ago   Up About an hou
 f819a6c49c20
 ```
 
-##### 启动已停止容器
+#### 启动已停止容器
 
 - docker start 容器id
 
@@ -458,7 +456,7 @@ CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS        
 6e819bf81a47   redis     "docker-entrypoint.s…"   6 minutes ago   Up 6 seconds   0.0.0.0:6379->6379/tcp, :::6379->6379/tcp   redis1
 ```
 
-##### 重启容器
+#### 重启容器
 
 - docker restart 容器id
 
@@ -467,7 +465,7 @@ CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS        
 6e819bf81a47
 ```
 
-##### 删除容器
+#### 删除容器
 
 - 删除容器需要停止容器
 - docker rm 容器id
@@ -493,7 +491,7 @@ f819a6c49c20
 0df765bf4c4f
 ```
 
-#####  查看后台运行日志
+####  查看后台运行日志
 
 - docker logs 容器id/容器名
 
@@ -511,7 +509,7 @@ f819a6c49c20
 11-May-2023 09:47:56.771 INFO [Catalina-utility-1] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/usr/local/tomcat/webapps/ROOT] has finished in [343] ms
 ```
 
-##### Docker进入容器
+#### Docker进入容器
 
 - 命令：docker exec -it 容器id/容器名 bash
 
@@ -527,7 +525,7 @@ exit
 >
 > 默认容器内linux包是最小安装。只提供最基本的命令；exit不会导致容器的停止。
 
-##### 宿主机和容器之间交换文件
+#### 宿主机和容器之间交换文件
 
 - 容器复制到宿主机：docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH
 - 宿主机复制到容器：docker cp [OPTIONS] SRC_PATH|- CONTAINER:DEST_PATH
@@ -546,7 +544,7 @@ Successfully copied 2.05kB to /root/
 Docker-Logo-700x394.png  index.html
 ```
 
-#### 推送镜像
+### 推送镜像
 
 ```shell
 #运行中的容器保存到新的镜像
@@ -571,7 +569,7 @@ Login Succeeded
 [root@docker ~]# docker push canvs/nginx:v1
 ```
 
-#### Docker挂载
+### Docker挂载
 
 - Volumes（卷）：存储在主机文件系统的一部分中，该文件系统由Docker管理（在Linux上时"/var/lib/docker/volumes/"）。非Docker进程不应该修改文件系统这一部分。
   - 匿名卷：docker run -d -P -v :/etc/nginx nginx
@@ -582,7 +580,7 @@ Login Succeeded
 
 ![553377-20211031122438814-2046080875](imgs/553377-20211031122438814-2046080875.png)
 
-##### 数据卷特性
+#### 数据卷特性
 
 - 数据卷可以在容器之间共享和重复利用数据
 - 对数据卷的修改会立马生效
@@ -591,7 +589,7 @@ Login Succeeded
 
 >通过镜像创建一个容器。容器一旦销毁，则容器内的数据将一并被删除；容器中的数据不是持久化状态的；数据卷的目的就是数据的持久化，完全独立于容器的生命周期，因此docker不会再容器删除时删除其挂载的数据卷。
 
-#### 数据卷的应用
+### 数据卷的应用
 
 **创建数据卷**
 
@@ -653,7 +651,7 @@ web_volume
 [root@docker ~]# docker volume prune
 ```
 
-#### Nginx
+### Nginx
 
 ```shell
 #安装Nginx
@@ -700,7 +698,7 @@ Successfully copied 3.58kB to /usr/local/docker/nginx/
 630ac564b05c   nginx     "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:80->80/tcp, :::80->80/tcp           nginx-80
 ```
 
-##### 反向代理
+#### 反向代理
 
 - 修改conf.d/default.conf
 
@@ -711,7 +709,7 @@ location / {
  }
 ```
 
-##### 负载均衡
+#### 负载均衡
 
 - 修改nginx.conf
 
@@ -738,7 +736,7 @@ location /{
 # }
 ```
 
-#### Mysql
+### Mysql
 
 ```shell
 [root@docker /]# docker pull mysql
@@ -748,7 +746,7 @@ location /{
 root@c771a20980d0:/# mysql -u root -p 
 ```
 
-#### 存储原理
+### 存储原理
 
 ```shell
 [root@docker ~]# docker image inspect nginx
@@ -787,7 +785,7 @@ docker-entrypoint.d
 - UpperDir：上层目录
 - WorkDir：工作目录（零时层），pid；
 
-#### 可视化界面-[Portainer](https://documentation.portainer.io/)
+### 可视化界面-[Portainer](https://documentation.portainer.io/)
 
 Portainer社区版2.0拥有超过50万的普通用户，是功能强大的开源工具集，可让您轻松地在Docker， Swarm，Kubernetes和Azure ACI中构建和管理容器。 Portainer的工作原理是在易于使用的GUI后面隐藏 使管理容器变得困难的复杂性。通过消除用户使用CLI，编写YAML或理解清单的需求，Portainer使部署 应用程序和解决问题变得如此简单，任何人都可以做到。 Portainer开发团队在这里为您的Docker之旅提 供帮助;
 
@@ -799,7 +797,7 @@ docker run -d -p 8000:8000 -p 9000:9000 --name=portainer --restart=always -v /va
 docker run -d -p 9001:9001 --name portainer_agent --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker/volumes:/var/lib/docker/volumes portainer/agent
 ```
 
-#### Dockerfile
+### Dockerfile
 
 | 指令        | 说明                                                         |
 | ----------- | ------------------------------------------------------------ |
